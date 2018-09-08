@@ -15,9 +15,21 @@
 <body>
 	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
 	<script src="https://unpkg.com/quasar-framework@^0.17.0/dist/umd/quasar.ios.umd.min.js"></script>
-	<script src="main.js"></script>
 	<div id="q-app">
-		
+	<q-modal v-model="modal" maximized>
+		<q-carousel class="text-white full-height" no-swipe>
+		  <q-carousel-slide class="bg-primary flex flex-center">
+          <div class="q-display-3">Step 1</div>
+		  </q-carousel-slide>
+		  <q-carousel-slide class="bg-secondary flex flex-center">
+          <div class="q-display-3">Step 2</div>
+		  </q-carousel-slide>
+		  <q-carousel-slide class="bg-tertiary flex flex-center">
+          <div class="q-display-3">Step 3</div>
+		  </q-carousel-slide>
+		</q-carousel>
+	</q-modal>
 	</div>
+	<script src="main.js"></script>
 </body>
 </html>
