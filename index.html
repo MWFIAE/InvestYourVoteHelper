@@ -23,7 +23,7 @@
 			<day-step v-model="day" @nextstep="step2"></day-step>
 		  </q-carousel-slide>
 		  <q-carousel-slide class="bg-secondary flex flex-center">
-          <div class="q-display-3">Step 2</div>
+			<previous-data-step :day="day" @nextstep="step3"></previous-data-step>
 		  </q-carousel-slide>
 		  <q-carousel-slide class="bg-tertiary flex flex-center">
           <div class="q-display-3">Step 3</div>
