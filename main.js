@@ -1,8 +1,8 @@
 // Define a new component for the first step (input day)
 // This component acts as an custom input, therefor we have a value prop as well as an "input" emiter.
 Vue.component('day-step', {
-	props: ['value',],
-	template: '<div><label for="day-input">Tag:</label> <input type="number" id="day-input" name="day" v-model.number="value" @change="updateDay" @keyup.enter="doNextStep"></input></div>',
+	props: ['value'],
+	template: '<div><q-input type="number" name="day" v-model.number="value" float-label="Tag" @change="updateDay" @keyup.enter="doNextStep" :after="after" autofocus ></q-input></div>',
 	methods: {
 		//Sets the localStorage for the next time we want to execute this.
 		updateDay: function(){
@@ -13,6 +13,9 @@ Vue.component('day-step', {
 		doNextStep: function(){
 			this.$emit('nextstep');
 		},
+	},
+	data: function(){
+		return {after: [{icon: 'arrow_forward', content: true, handler:()=>{this.doNextStep();}}] };
 	}
 })
 
