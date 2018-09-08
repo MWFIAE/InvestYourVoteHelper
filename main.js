@@ -1,7 +1,34 @@
+// Define a new component for the first step (input day)
+// This component acts as an custom input, therefor we have a value prop as well as an "input" emiter.
+Vue.component('day-step', {
+	props: ['value',],
+	template: '<div><label for="day-input">Tag:</label> <input type="number" id="day-input" name="day" v-model.number="value" @change="updateDay" @keyup.enter="doNextStep"></input></div>',
+	methods: {
+		//Sets the localStorage for the next time we want to execute this.
+		updateDay: function(){
+			localStorage.setItem("day", this.value);
+			this.$emit('input', this.value);
+		},
+		// Tells the parent to go to the next page. 
+		doNextStep: function(){
+			this.$emit('nextstep');
+		},
+	}
+})
+
 new Vue({
   el: '#q-app',
   data: function () {
-	return {modal: true}
+	//Get the day from the localStorage so it doesn't need to be inputed every time.
+	var day = localStorage.getItem("day");
+	if(!day)
+		day = 1;
+	return {modal: true, day}
   },
-  methods: {},
+  methods: {
+	// Go to the second step on the carousel (uploading previous data)
+	step2: function(){
+		this.$refs.carousel.next();
+	}
+  },
 })

@@ -17,9 +17,9 @@
 	<script src="https://unpkg.com/quasar-framework@^0.17.0/dist/umd/quasar.ios.umd.min.js"></script>
 	<div id="q-app">
 	<q-modal v-model="modal" maximized>
-		<q-carousel class="text-white full-height" no-swipe>
+		<q-carousel class="text-white full-height" no-swipe ref="carousel">
 		  <q-carousel-slide class="bg-primary flex flex-center">
-          <div class="q-display-3">Step 1</div>
+			<day-step v-model="day" @nextstep="step2"></day-step>
 		  </q-carousel-slide>
 		  <q-carousel-slide class="bg-secondary flex flex-center">
           <div class="q-display-3">Step 2</div>
