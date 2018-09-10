@@ -1,27 +1,38 @@
 
 Vue.use(Vuex);
-const localDay= localStorage.getItem("day");
-const localStor= localStorage.getItem("day-"+(localDay-1));
 const store = new Vuex.Store({
   state: {
-    day: localDay || 1,
+    day: localStorage.getItem("day") || 1,
 	slide: 0,
 	type: "storage", 
-	previous: localStor||"",
-	showStorage: !!localStor
+	previous: "",
+	showStorage: false,
+	members: []
   },
   mutations: {
     setDay (state, day) {
 		state.day = day;
 		localStorage.setItem("day", day);
-		var storage= localStorage.getItem("day-"+(day-1))
-		state.showStorage = !!storage;
-		state.type = state.showStorage ?"storage":"text";
-		state.previous = storage||"";
 		
     },
 	setSlide(state, slide){
-		state.slide++;
+		state.slide=slide;
+		switch(slide){
+		case 1:
+			var storage= localStorage.getItem("day-"+(state.day-1))
+			state.showStorage = !!storage;
+			state.type = state.showStorage ?"storage":"text";
+			state.previous = storage||"";
+			break;
+		case 2:
+			state.members = [];
+			var lines = state.previous.split("\n");
+			for(var i=0; i<lines.length; i++){
+				split = lines[i].trim().split(" ");
+				state.members.push({name: split[0], anteile: split[1]});
+			}
+			break;
+		}
 	},
 	setType(state, type){
 		state.type = type;
