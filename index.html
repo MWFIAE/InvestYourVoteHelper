@@ -14,6 +14,7 @@
 </head>
 
 <body>
+	<script src="https://unpkg.com/dsteem@^0.8.0/dist/dsteem.js"></script>
 	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
 	<script src="https://unpkg.com/vuex"></script>
 	<script src="https://unpkg.com/quasar-framework@^0.17.0/dist/umd/quasar.mat.umd.min.js"></script>
@@ -29,9 +30,13 @@
 		  <q-carousel-slide class="bg-tertiary flex flex-center">
 			<member-list-step></member-list-step>
 		  </q-carousel-slide>
+		  <q-carousel-slide class="bg-primary flex flex-center">
+			<share-list></share-list>
+		  </q-carousel-slide>
 		</q-carousel>
 	</q-modal>
 	</div>
+	<script src="helper.js"></script>
 	<script src="main.js"></script>
 </body>
 </html>

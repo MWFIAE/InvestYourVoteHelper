@@ -1,3 +1,8 @@
+
+const author = 'investyourvote';
+const permlink = 'day-%day%-anteilpost';
+const client = new dsteem.Client('https://api.steemit.com')
+
 Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
@@ -6,7 +11,15 @@ const store = new Vuex.Store({
 	type: "storage", 
 	previous: "",
 	showStorage: false,
-	members: {}
+	members: {},
+	activeVotes: [],
+	voteList: {}
+  },
+  actions:{
+	async getActiveVotes({commit}){
+		const content = await client.database.call('get_content', [author, permlink.replace("%day%", store.state.day)]);
+		commit("setActiveVotes", content.active_votes);
+	},
   },
   mutations: {
     setDay (state, day) {
@@ -22,17 +35,39 @@ const store = new Vuex.Store({
 			state.showStorage = !!storage;
 			state.type = state.showStorage ?"storage":"text";
 			state.previous = storage||"";
+			store.dispatch('getActiveVotes')
 			break;
 		case 2:
 			state.members = {};
 			var lines = state.previous.split("\n");
 			for(var i=0; i<lines.length; i++){
 				split = lines[i].trim().split(" ");
-				member = {name: split[0].replace("@",""), anteile: split[1]}
+				member = {name: split[0].replace("@",""), anteile: parseFloat(split[1].replace(",","."))}
 				Vue.set(state.members, member.name, member);
 			}
 			break;
+		case 3:
+			var values = Object.values(state.members);
+			for(var i=0; i<values.length; i++){
+				var member = values[i];
+				voteEntry = { name: member.name, anteile: member.anteile, comment: "", shares: 0, neueAnteile: 0 };
+				var vote = state.activeVotes.find( vote=>vote.voter == member.name);
+				if(!!vote){
+					voteEntry.shares = vote.rshares;
+					if(voteEntry.shares <= 500000000)
+						voteEntry.comment="Vote not big enough";
+					else{
+						voteEntry.neueAnteile = parseFloat((vote.rshares / 10000000000).toFixed(3));
+						voteEntry.anteile += voteEntry.neueAnteile;
+					}	
+				}else{
+					voteEntry.comment = "Not voted";
+				}
+				
+				Vue.set(state.voteList, member.name, voteEntry);
+			}
 		}
+		
 	},
 	setType(state, type){
 		state.type = type;
@@ -49,6 +84,11 @@ const store = new Vuex.Store({
 	},
 	deleteMember(state, name){
 		Vue.delete(state.members,name);
+	},
+	setActiveVotes(state, votes){
+		state.activeVotes = votes;
+		if(state.slide==3)
+			console.log("Connection to slow!");
 	}
   },
   strict: true
@@ -133,14 +173,65 @@ Vue.component('previous-data-step', {
 });
 
 Vue.component('member-list-step', {
-	template: 	'<div style="width: 30vw">'+
+	template: 	'<div style="width: 30vw" @keyup.enter="doNextStep">'+
 					'<q-field><q-input  type="text" name="currname" v-model="currname" float-label="Name" @keyup.enter="addMember" :after="after"></q-input></q-field>'+
 					'<q-scroll-area style="width: auto; height: 90vh;">'+
 						'<table  style="white-space:nowrap;">'+
+							'<tr>'+
+								'<th>Name</th>'+
+								'<th>Anteile</th>'+
+							'</tr>'+
 							'<tr v-for="member in members">'+
 								'<td>{{member.name}}</td>'+
-								'<td>{{member.anteile}}</td>'+
+								'<td>{{member.anteile.toFixed(3)}}</td>'+
 								'<td><q-btn @click="deleteMember(member.name)" icon="clear" size="s" text-color="primary"> </q-btn></td>'+
+							'</tr>'+
+						'</table>'+
+					'</q-scroll-area>'+
+					'<q-button icon="arrow_forward" text-color="primary" @click="doNextStep" >Next</q-button>'+
+				'</div>',
+	methods: {
+		// Tells the parent to go to the next page. 
+		doNextStep: function(){
+			store.commit("setSlide",3);
+		},
+		addMember: function(){
+			store.commit("addMember", this.currname);
+			this.currname="";
+		},
+		deleteMember: function(name){
+			store.commit("deleteMember", name);
+		},
+	},
+	data: function(){
+		var dat= {};
+		dat.currname ="";
+		dat.after = [{icon: 'add', content: true, handler: ()=>{this.addMember();},  }];
+		return dat;
+	},
+	computed:{
+		members(){
+			return store.state.members;
+		}
+	}
+});
+Vue.component('share-list', {
+	template: 	'<div style="width: 50vw">'+
+					'<q-scroll-area style="width: auto; height: 90vh;">'+
+						'<table  style="white-space:nowrap;">'+
+							'<tr>'+
+								'<th>Name</th>'+
+								'<th>Anteile</th>'+
+								'<th>Neue Anteile</th>'+
+								'<th>Vote-Rshares</th>'+
+								'<th>Kommentar</th>'+
+							'</tr>'+
+							'<tr v-for="entry in voteList">'+
+								'<td>{{entry.name}}</td>'+
+								'<td>{{entry.anteile.toFixed(3)}}</td>'+
+								'<td>{{entry.neueAnteile.toFixed(3)}}</td>'+
+								'<td>{{entry.shares}}</td>'+
+								'<td>{{entry.comment}}</td>'+
 							'</tr>'+
 						'</table>'+
 					'</q-scroll-area>'+
@@ -165,8 +256,8 @@ Vue.component('member-list-step', {
 		return dat;
 	},
 	computed:{
-		members(){
-			return store.state.members;
+		voteList(){
+			return store.state.voteList;
 		}
 	}
 });
