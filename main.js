@@ -1,4 +1,3 @@
-
 Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
@@ -7,7 +6,7 @@ const store = new Vuex.Store({
 	type: "storage", 
 	previous: "",
 	showStorage: false,
-	members: []
+	members: {}
   },
   mutations: {
     setDay (state, day) {
@@ -25,11 +24,12 @@ const store = new Vuex.Store({
 			state.previous = storage||"";
 			break;
 		case 2:
-			state.members = [];
+			state.members = {};
 			var lines = state.previous.split("\n");
 			for(var i=0; i<lines.length; i++){
 				split = lines[i].trim().split(" ");
-				state.members.push({name: split[0], anteile: split[1]});
+				member = {name: split[0].replace("@",""), anteile: split[1]}
+				Vue.set(state.members, member.name, member);
 			}
 			break;
 		}
@@ -42,6 +42,13 @@ const store = new Vuex.Store({
 	},
 	setPrevious(state, previous){
 		state.previous=previous;
+	},
+	addMember(state, name){
+		if(!state.members[name])
+			Vue.set(state.members,name, {name, anteile:0});
+	},
+	deleteMember(state, name){
+		Vue.delete(state.members,name);
 	}
   },
   strict: true
@@ -69,7 +76,8 @@ Vue.component('day-step', {
 			return store.state.day;
 		}
 	}
-})
+});
+
 Vue.component('previous-data-step', {
 	template: '<div style="width:100%" @keyup.enter="doNextStep">'+
 				'<div style="float:left; padding-right: 10%;padding-left: 10%;width:50%">'+
@@ -78,9 +86,9 @@ Vue.component('previous-data-step', {
 				'</div>'+
 				'<div style="float:left;padding-right: 10%;padding-left: 10%;width:50%">'+
 					'<q-scroll-area style="width: 100%; height: 50vh;">'+
-						'<q-input type="textarea" :value="previous" :readonly="type!=\'text\'" :disabled="type!=\'text\'" @keyup.enter.shift.stop=""> </q-input>'+
+						'<q-input type="textarea" :value="previous" :readonly="type!=\'text\'" :disabled="type!=\'text\'" @input="changePrevious" @keyup.enter.shift.stop=""> </q-input>'+
 					'</q-scroll-area>'+
-					'<q-button v-if="!!previous" icon="arrow_forward" @click="doNextStep" >Next</q-button>'+
+					'<q-button v-if="!!previous" icon="arrow_forward" text-color="primary" @click="doNextStep" >Next</q-button>'+
 				'</div>'+
 			  '<div>',
 	methods: {
@@ -101,6 +109,9 @@ Vue.component('previous-data-step', {
 		typeChanged: function(type){
 			store.commit("setType", type);
 		},
+		changePrevious: function(previous){
+			store.commit("setPrevious", previous);
+		}
 	},
 	data: function(){
 		var dat= {};
@@ -119,7 +130,47 @@ Vue.component('previous-data-step', {
 			return store.state.showStorage;
 		}
 	}
-})
+});
+
+Vue.component('member-list-step', {
+	template: 	'<div style="width: 30vw">'+
+					'<q-field><q-input  type="text" name="currname" v-model="currname" float-label="Name" @keyup.enter="addMember" :after="after"></q-input></q-field>'+
+					'<q-scroll-area style="width: auto; height: 90vh;">'+
+						'<table  style="white-space:nowrap;">'+
+							'<tr v-for="member in members">'+
+								'<td>{{member.name}}</td>'+
+								'<td>{{member.anteile}}</td>'+
+								'<td><q-btn @click="deleteMember(member.name)" icon="clear" size="s" text-color="primary"> </q-btn></td>'+
+							'</tr>'+
+						'</table>'+
+					'</q-scroll-area>'+
+				'</div>',
+	methods: {
+		// Tells the parent to go to the next page. 
+		doNextStep: function(){
+			store.commit("setSlide",3);
+		},
+		addMember: function(){
+			store.commit("addMember", this.currname);
+			this.currname="";
+		},
+		deleteMember: function(name){
+			store.commit("deleteMember", name);
+		},
+	},
+	data: function(){
+		var dat= {};
+		dat.currname ="";
+		dat.after = [{icon: 'add', content: true, handler: ()=>{this.addMember();},  }];
+		return dat;
+	},
+	computed:{
+		members(){
+			return store.state.members;
+		}
+	}
+});
+
 new Vue({
 	el: '#q-app',
 	store, 
