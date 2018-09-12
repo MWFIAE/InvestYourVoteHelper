@@ -92,7 +92,7 @@ const store = new Vuex.Store({
 			console.log("Connection to slow!");
 	},
 	addTrade(state, trade){
-		trade.key = trade.from+trade.to;
+		trade.key = trade.from+"~"+trade.to;
 		Vue.set(state.tradeList, trade.key, trade);
 	},
 	deleteTrade(state, key){
