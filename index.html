@@ -15,12 +15,12 @@
 
 <body>
 	<script src="https://unpkg.com/dsteem@^0.8.0/dist/dsteem.js"></script>
-	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
+	<script src="https://unpkg.com/vue@2.5.17/dist/vue.js"></script>
 	<script src="https://unpkg.com/vuex"></script>
 	<script src="https://unpkg.com/quasar-framework@^0.17.0/dist/umd/quasar.mat.umd.min.js"></script>
 	<div id="q-app">
 	<q-modal v-model="modal" maximized no-esc-dismiss>
-		<q-carousel :value="slide" class="text-white full-height" no-swipe ref="carousel">
+		<q-carousel :value="slide" class="text-white full-height" ref="carousel" @slide="changeSlide" :no-swipe="!canSlide" :arrows="canSlide">
 		  <q-carousel-slide class="bg-primary flex flex-center">
 			<day-step v-if="slide==0"></day-step>
 		  </q-carousel-slide>

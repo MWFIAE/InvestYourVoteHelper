@@ -128,7 +128,6 @@ Vue.component('previous-data-step', {
 					'<q-scroll-area style="width: 100%; height: 50vh;">'+
 						'<q-input type="textarea" :value="previous" :readonly="type!=\'text\'" :disabled="type!=\'text\'" @input="changePrevious" @keyup.enter.shift.stop=""> </q-input>'+
 					'</q-scroll-area>'+
-					'<q-button v-if="!!previous" icon="arrow_forward" text-color="primary" @click="doNextStep" >Next</q-button>'+
 				'</div>'+
 			  '<div>',
 	methods: {
@@ -181,7 +180,6 @@ Vue.component('member-list-step', {
 							'</q-td>'+
 						'</q-table>'+
 					'</q-scroll-area>'+
-					'<q-button icon="arrow_forward" text-color="primary" @click="doNextStep" >Next</q-button>'+
 				'</div>',
 	methods: {
 		doNextStep: function(){
@@ -243,22 +241,6 @@ Vue.component('share-list', {
 	template: 	'<div style="width: 50vw">'+
 					'<q-scroll-area style="width: auto; height: 90vh;">'+
 						'<q-table title="Members" :data="voteList" :columns="columns" row-key="name" :pagination.sync="pagination"></q-table>'+
-						/*'<table  style="white-space:nowrap;">'+
-							'<tr>'+
-								'<th>Name</th>'+
-								'<th>Anteile</th>'+
-								'<th>Neue Anteile</th>'+
-								'<th>Vote-Rshares</th>'+
-								'<th>Kommentar</th>'+
-							'</tr>'+
-							'<tr v-for="entry in voteList">'+
-								'<td>{{entry.name}}</td>'+
-								'<td>{{entry.anteile.toFixed(3)}}</td>'+
-								'<td>{{entry.neueAnteile.toFixed(3)}}</td>'+
-								'<td>{{entry.shares}}</td>'+
-								'<td>{{entry.comment}}</td>'+
-							'</tr>'+
-						'</table>'+*/
 					'</q-scroll-area>'+
 				'</div>',
 	methods: {
@@ -340,7 +322,17 @@ new Vue({
 	data: function () {
 		return {modal: true}
 	},
+	methods:{
+		changeSlide(index, direction){
+			store.commit("setSlide", index);
+		}
+	},
 	computed:{
+		canSlide(){
+			store.state.slide;
+			store.state.previous;
+			return store.state.slide!=1 || !!store.state.previous;
+		},
 		slide(){
 			return store.state.slide;
 		}
