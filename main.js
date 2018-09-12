@@ -53,7 +53,7 @@ const store = new Vuex.Store({
 				voteEntry = { name: member.name, anteile: member.anteile, comment: "", shares: 0, neueAnteile: 0 };
 				var vote = state.activeVotes.find( vote=>vote.voter == member.name);
 				if(!!vote){
-					voteEntry.shares = vote.rshares;
+					voteEntry.shares = parseInt(vote.rshares);
 					if(voteEntry.shares <= 500000000)
 						voteEntry.comment="Vote not big enough";
 					else{
