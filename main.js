@@ -13,7 +13,8 @@ const store = new Vuex.Store({
 	showStorage: false,
 	members: {},
 	activeVotes: [],
-	voteList: {}
+	voteList: {},
+	tradeList: {}
   },
   actions:{
 	async getActiveVotes({commit}){
@@ -89,6 +90,10 @@ const store = new Vuex.Store({
 		state.activeVotes = votes;
 		if(state.slide==3)
 			console.log("Connection to slow!");
+	},
+	addTrade(state, trade){
+		trade.key = trade.from+trade.to;
+		Vue.set(state.tradeList, trade.key, trade);
 	}
   },
   strict: true
@@ -97,19 +102,12 @@ const store = new Vuex.Store({
 // Define a new component for the first step (input day)
 // This component acts as an custom input, therefor we have a value prop as well as an "input" emiter.
 Vue.component('day-step', {
-	template: '<div><q-input type="number" name="day" :value="day" float-label="Tag" @input="updateDay" @keyup.enter="doNextStep" :after="after" autofocus ></q-input></div>',
+	template: '<div><q-input type="number" name="day" :value="day" float-label="Tag" @input="updateDay" autofocus ></q-input></div>',
 	methods: {
 		//Sets the localStorage for the next time we want to execute this.
 		updateDay: function(message){
 			store.commit("setDay", message);
 		},
-		// Tells the parent to go to the next page. 
-		doNextStep: function(){
-			store.commit("setSlide",1);
-		},
-	},
-	data: function(){
-		return {after: [{icon: 'arrow_forward', content: true, handler:()=>{this.doNextStep();}}] };
 	},
 	computed:{
 		day(){
@@ -119,7 +117,7 @@ Vue.component('day-step', {
 });
 
 Vue.component('previous-data-step', {
-	template: '<div style="width:100%" @keyup.enter="doNextStep">'+
+	template: '<div style="width:100%">'+
 				'<div style="float:left; padding-right: 10%;padding-left: 10%;width:50%">'+
 					'<template v-for="item in types"><q-radio :value="type" :val="item.value" :label="item.label" @input="typeChanged"  v-if="( item.value!=\'storage\' || showStorage)"/><br /></template>'+
 					'<q-uploader v-if="type==\'file\'" url="#" extensions=".csv" hide-upload-button auto-expand clearable @add="addFile"></q-uploader>'+
@@ -131,10 +129,6 @@ Vue.component('previous-data-step', {
 				'</div>'+
 			  '<div>',
 	methods: {
-		doNextStep: function(){
-			if(!!this.previous)
-				store.commit("setSlide",2);
-		},
 		addFile: function(files){
 			var file= files[0];
 			console.log(file);
@@ -154,7 +148,6 @@ Vue.component('previous-data-step', {
 	data: function(){
 		var dat= {};
 		dat.types= [ {label:'Lokal Storage', value:'storage'}, {label:'Manuelle Eingabe', value:'text'},{label:'Datei', value:'file'}, ];
-		dat.after = [{icon: 'arrow_forward', content: true, handler: ()=>{this.doNextStep();},  }];
 		return dat;
 	},
 	computed:{
@@ -171,7 +164,7 @@ Vue.component('previous-data-step', {
 });
 
 Vue.component('member-list-step', {
-	template: 	'<div style="width: 30vw" @keyup.enter="doNextStep">'+
+	template: 	'<div style="width: 30vw">'+
 					'<q-field><q-input  type="text" name="currname" v-model="currname" float-label="Name" @keyup.enter="addMember" :after="after"></q-input></q-field>'+
 					'<q-scroll-area style="width: auto; height: 90vh;">'+
 						'<q-table title="Members" :data=members :columns="columns" row-key="name" :pagination.sync="pagination">'+
@@ -182,9 +175,6 @@ Vue.component('member-list-step', {
 					'</q-scroll-area>'+
 				'</div>',
 	methods: {
-		doNextStep: function(){
-			store.commit("setSlide",3);
-		},
 		addMember: function(){
 			store.commit("addMember", this.currname);
 			this.currname="";
@@ -237,16 +227,13 @@ Vue.component('member-list-step', {
 		}
 	}
 });
-Vue.component('share-list', {
+Vue.component('share-list-step', {
 	template: 	'<div style="width: 50vw">'+
 					'<q-scroll-area style="width: auto; height: 90vh;">'+
 						'<q-table title="Members" :data="voteList" :columns="columns" row-key="name" :pagination.sync="pagination"></q-table>'+
 					'</q-scroll-area>'+
 				'</div>',
 	methods: {
-		doNextStep: function(){
-			store.commit("setSlide",3);
-		},
 		addMember: function(){
 			store.commit("addMember", this.currname);
 			this.currname="";
@@ -257,8 +244,6 @@ Vue.component('share-list', {
 	},
 	data: function(){
 		var dat= {};
-		dat.currname ="";
-		dat.after = [{icon: 'add', content: true, handler: ()=>{this.addMember();},  }];
 		dat.pagination = {
 		  sortBy: null,
 		  descending: false,
@@ -312,6 +297,65 @@ Vue.component('share-list', {
 	computed:{
 		voteList(){
 			return Object.values(store.state.voteList);
+		}
+	}
+});
+
+Vue.component('trade-step', {
+	template: 	'<div style="width: 50vw">'+
+					'<div class="row no-wrap"><q-input v-model="from"></q-input><q-input v-model="to"></q-input><q-input type="number" v-model="amount"></q-input>'+
+					'<q-btn @click="addTrade()" icon="add_circle_outline" size="s" text-color="primary"> </q-btn></div>'+
+					'<q-scroll-area style="width: auto; height: 80vh;">'+
+						'<q-table title="Trades" :data="tradeList" :columns="columns" row-key="key" :pagination.sync="pagination"></q-table>'+
+					'</q-scroll-area>'+
+				'</div>',
+	methods: {
+		addTrade(){
+			store.commit("addTrade", {from:this.from, to:this.to, amount:this.amount});
+		}
+	},
+	data: function(){
+		var dat= {};
+		dat.from="";
+		dat.to="";
+		dat.amount=0;
+		dat.pagination = {
+		  sortBy: null,
+		  descending: false,
+		  page: 1,
+		  rowsPerPage: 10
+		};
+		dat.columns = [
+		  {
+			name: 'from',
+			required: true,
+			label: 'Von',
+			align: 'left',
+			field: 'from',
+			sortable: true
+		  },
+		  {
+			name: 'to',
+			required: true,
+			label: 'Nach',
+			align: 'left',
+			field: 'to',
+			sortable: true
+		  },
+		  {
+			name: 'amount',
+			required: true,
+			label: 'Anteile',
+			align: 'left',
+			field: 'amount',
+			sortable: true
+		  }
+		];
+		return dat;
+	},
+	computed:{
+		tradeList(){
+			return Object.values(store.state.tradeList);
 		}
 	}
 });

@@ -31,7 +31,10 @@
 			<member-list-step v-if="slide==2"></member-list-step>
 		  </q-carousel-slide>
 		  <q-carousel-slide class="bg-primary flex flex-center">
-			<share-list v-if="slide==3"></share-list>
+			<share-list-step v-if="slide==3"></share-list-step>
+		  </q-carousel-slide>
+		  <q-carousel-slide class="bg-secondary flex flex-center">
+			<trade-step v-if="slide==4"></trade-step>
 		  </q-carousel-slide>
 		</q-carousel>
 	</q-modal>
