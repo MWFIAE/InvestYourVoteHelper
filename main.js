@@ -132,7 +132,6 @@ Vue.component('previous-data-step', {
 				'</div>'+
 			  '<div>',
 	methods: {
-		// Tells the parent to go to the next page. 
 		doNextStep: function(){
 			if(!!this.previous)
 				store.commit("setSlide",2);
@@ -176,22 +175,15 @@ Vue.component('member-list-step', {
 	template: 	'<div style="width: 30vw" @keyup.enter="doNextStep">'+
 					'<q-field><q-input  type="text" name="currname" v-model="currname" float-label="Name" @keyup.enter="addMember" :after="after"></q-input></q-field>'+
 					'<q-scroll-area style="width: auto; height: 90vh;">'+
-						'<table  style="white-space:nowrap;">'+
-							'<tr>'+
-								'<th>Name</th>'+
-								'<th>Anteile</th>'+
-							'</tr>'+
-							'<tr v-for="member in members">'+
-								'<td>{{member.name}}</td>'+
-								'<td>{{member.anteile.toFixed(3)}}</td>'+
-								'<td><q-btn @click="deleteMember(member.name)" icon="clear" size="s" text-color="primary"> </q-btn></td>'+
-							'</tr>'+
-						'</table>'+
+						'<q-table title="Members" :data=members :columns="columns" row-key="name" :pagination.sync="pagination">'+
+							'<q-td slot="body-cell-clear" slot-scope="props" :props="props">'+
+								'<q-btn @click="deleteMember(props.value)" icon="clear" size="s" text-color="primary"> </q-btn>'+
+							'</q-td>'+
+						'</q-table>'+
 					'</q-scroll-area>'+
 					'<q-button icon="arrow_forward" text-color="primary" @click="doNextStep" >Next</q-button>'+
 				'</div>',
 	methods: {
-		// Tells the parent to go to the next page. 
 		doNextStep: function(){
 			store.commit("setSlide",3);
 		},
@@ -206,19 +198,52 @@ Vue.component('member-list-step', {
 	data: function(){
 		var dat= {};
 		dat.currname ="";
+		dat.pagination = {
+		  sortBy: null,
+		  descending: false,
+		  page: 1,
+		  rowsPerPage: 10
+		};
+		dat.columns = [
+		  {
+			name: 'name',
+			required: true,
+			label: 'Name',
+			align: 'left',
+			field: 'name',
+			sortable: true
+		  },
+		  {
+			name: 'anteile',
+			required: true,
+			label: 'Anteile',
+			align: 'left',
+			field: 'anteile',
+			sortable: true
+		  },
+		  {
+			name: 'clear',
+			required: true,
+			label: '',
+			align: 'left',
+			field: 'name',
+			sortable: true
+		  }
+		];
 		dat.after = [{icon: 'add', content: true, handler: ()=>{this.addMember();},  }];
 		return dat;
 	},
 	computed:{
 		members(){
-			return store.state.members;
+			return Object.values(store.state.members);
 		}
 	}
 });
 Vue.component('share-list', {
 	template: 	'<div style="width: 50vw">'+
 					'<q-scroll-area style="width: auto; height: 90vh;">'+
-						'<table  style="white-space:nowrap;">'+
+						'<q-table title="Members" :data="voteList" :columns="columns" row-key="name" :pagination.sync="pagination"></q-table>'+
+						/*'<table  style="white-space:nowrap;">'+
 							'<tr>'+
 								'<th>Name</th>'+
 								'<th>Anteile</th>'+
@@ -233,11 +258,10 @@ Vue.component('share-list', {
 								'<td>{{entry.shares}}</td>'+
 								'<td>{{entry.comment}}</td>'+
 							'</tr>'+
-						'</table>'+
+						'</table>'+*/
 					'</q-scroll-area>'+
 				'</div>',
 	methods: {
-		// Tells the parent to go to the next page. 
 		doNextStep: function(){
 			store.commit("setSlide",3);
 		},
@@ -253,11 +277,59 @@ Vue.component('share-list', {
 		var dat= {};
 		dat.currname ="";
 		dat.after = [{icon: 'add', content: true, handler: ()=>{this.addMember();},  }];
+		dat.pagination = {
+		  sortBy: null,
+		  descending: false,
+		  page: 1,
+		  rowsPerPage: 10
+		};
+		dat.columns = [
+		  {
+			name: 'name',
+			required: true,
+			label: 'Name',
+			align: 'left',
+			field: 'name',
+			sortable: true
+		  },
+		  {
+			name: 'anteile',
+			required: true,
+			label: 'Anteile',
+			align: 'left',
+			field: 'anteile',
+			sortable: true
+		  },
+		  {
+			name: 'neueAnteile',
+			required: true,
+			label: 'Neue Anteile',
+			align: 'left',
+			field: 'neueAnteile',
+			sortable: true
+		  },
+		  {
+			name: 'shares',
+			required: true,
+			label: 'Vote-RShares',
+			align: 'left',
+			field: 'shares',
+			sortable: true
+		  },
+		  {
+			name: 'comment',
+			required: true,
+			label: 'Kommentar',
+			align: 'left',
+			field: 'comment',
+			sortable: true
+		  }
+		];
 		return dat;
 	},
 	computed:{
 		voteList(){
-			return store.state.voteList;
+			return Object.values(store.state.voteList);
 		}
 	}
 });

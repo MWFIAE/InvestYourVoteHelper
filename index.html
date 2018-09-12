@@ -22,16 +22,16 @@
 	<q-modal v-model="modal" maximized no-esc-dismiss>
 		<q-carousel :value="slide" class="text-white full-height" no-swipe ref="carousel">
 		  <q-carousel-slide class="bg-primary flex flex-center">
-			<day-step></day-step>
+			<day-step v-if="slide==0"></day-step>
 		  </q-carousel-slide>
 		  <q-carousel-slide class="bg-secondary flex flex-center">
-			<previous-data-step></previous-data-step>
+			<previous-data-step v-if="slide==1"></previous-data-step>
 		  </q-carousel-slide>
 		  <q-carousel-slide class="bg-tertiary flex flex-center">
-			<member-list-step></member-list-step>
+			<member-list-step v-if="slide==2"></member-list-step>
 		  </q-carousel-slide>
 		  <q-carousel-slide class="bg-primary flex flex-center">
-			<share-list></share-list>
+			<share-list v-if="slide==3"></share-list>
 		  </q-carousel-slide>
 		</q-carousel>
 	</q-modal>
