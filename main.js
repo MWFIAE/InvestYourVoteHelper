@@ -94,6 +94,9 @@ const store = new Vuex.Store({
 	addTrade(state, trade){
 		trade.key = trade.from+trade.to;
 		Vue.set(state.tradeList, trade.key, trade);
+	},
+	deleteTrade(state, key){
+		Vue.delete(state.tradeList, key);
 	}
   },
   strict: true
@@ -102,7 +105,7 @@ const store = new Vuex.Store({
 // Define a new component for the first step (input day)
 // This component acts as an custom input, therefor we have a value prop as well as an "input" emiter.
 Vue.component('day-step', {
-	template: '<div><q-input type="number" name="day" :value="day" float-label="Tag" @input="updateDay" autofocus ></q-input></div>',
+	template: '<div><q-input type="number" name="day" :value="day" float-label="Tag" @input="updateDay" ></q-input></div>',
 	methods: {
 		//Sets the localStorage for the next time we want to execute this.
 		updateDay: function(message){
@@ -303,15 +306,33 @@ Vue.component('share-list-step', {
 
 Vue.component('trade-step', {
 	template: 	'<div style="width: 50vw">'+
-					'<div class="row no-wrap"><q-input v-model="from"></q-input><q-input v-model="to"></q-input><q-input type="number" v-model="amount"></q-input>'+
+					'<div class="row no-wrap"><q-input float-label="Von" v-model="from"></q-input><q-input float-label="Nach" v-model="to"></q-input><q-input float-label="Anteile" type="number" v-model="amount"></q-input>'+
 					'<q-btn @click="addTrade()" icon="add_circle_outline" size="s" text-color="primary"> </q-btn></div>'+
 					'<q-scroll-area style="width: auto; height: 80vh;">'+
-						'<q-table title="Trades" :data="tradeList" :columns="columns" row-key="key" :pagination.sync="pagination"></q-table>'+
+						'<q-table title="Trades" :data="tradeList" :columns="columns" row-key="key" :pagination.sync="pagination">'+
+							'<q-td slot="body-cell-clear" slot-scope="props" :props="props">'+
+								'<q-btn @click="deleteTrade(props.value)" icon="clear" size="s" text-color="primary"> </q-btn>'+
+							'</q-td>'+
+						'</q-table>'+
 					'</q-scroll-area>'+
 				'</div>',
 	methods: {
 		addTrade(){
+			if(this.amount<=0)
+				return;
+			if(!store.state.members[this.from])
+				return;
+			if(!store.state.members[this.to])
+				return;
+			if(store.state.voteList[this.from].anteile < this.amount)
+				return;
 			store.commit("addTrade", {from:this.from, to:this.to, amount:this.amount});
+			this.from="";
+			this.to="";
+			this.amount=0;
+		},
+		deleteTrade(key){
+			store.commit("deleteTrade", key);
 		}
 	},
 	data: function(){
@@ -348,6 +369,14 @@ Vue.component('trade-step', {
 			label: 'Anteile',
 			align: 'left',
 			field: 'amount',
+			sortable: true
+		  },
+		  {
+			name: 'clear',
+			required: true,
+			label: '',
+			align: 'left',
+			field: 'key',
 			sortable: true
 		  }
 		];
